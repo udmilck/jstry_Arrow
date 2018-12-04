@@ -83,6 +83,7 @@ function Arrow(x, no) {
   this.imgsrc = "resoucre/food.jpg";
   this.position = "absolute";
   this.body = [x, 500, null];
+  var flgdead = false;
   this.show = function() {
     if (this.body[2] == null) {
       this.body[2] = document.createElement("img");
@@ -95,7 +96,15 @@ function Arrow(x, no) {
   };
   this.move = function() {
     this.body[1] = this.body[1] - 10;
-    if (this.body[1] <= 0) {
+    if (
+      (parseInt(this.body[0] / 40) == monster.x ||
+        parseInt(this.body[0] / 40) == monster.x - 1) &&
+      parseInt(this.body[1] / 40) == monster.y
+    ) {
+      monster.show();
+      flgdead = true;
+    }
+    if (this.body[1] <= 0 || flgdead) {
       clearInterval(arrowlist[no].timer);
       scene._map.removeChild(this.body[2]);
     } else {
