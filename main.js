@@ -4,6 +4,7 @@ var timer;
 var monster;
 var arrow;
 var shoottimer;
+var arrowlist = [];
 
 function Scene() {
   this.width = 1024;
@@ -31,6 +32,7 @@ function man() {
   this.imgsrc = "resoucre/man.jpg";
   this.position = "absolute";
   this.body = [1, 1, "black", null];
+  this.leftp = 0;
   this.setDirect = function(code) {
     switch (code) {
       case 37:
@@ -45,12 +47,14 @@ function man() {
     if (this.body[3] == null) {
       this.body[3] = document.createElement("img");
       this.body[3].src = this.imgsrc;
+      this.body[3].Id = "man";
       this.body[3].style.position = this.position;
       scene._map.appendChild(this.body[3]);
     }
     this.body[3].style.left = this.body[0] * this.width + "px";
     this.body[3].style.top =
       scene.width - this.body[1] * this.height * 25 + "px";
+    this.leftp = this.body[0] * this.width;
   };
   this.move = function() {
     switch (this.direct) {
@@ -73,12 +77,12 @@ function man() {
   };
 }
 
-function Arrow() {
+function Arrow(x, no) {
   this.width = 20;
   this.height = 20;
   this.imgsrc = "resoucre/food.jpg";
   this.position = "absolute";
-  this.body = [scene.width - man.body[1] * this.height * 25, 500, null];
+  this.body = [x, 500, null];
   this.show = function() {
     if (this.body[2] == null) {
       this.body[2] = document.createElement("img");
@@ -86,11 +90,18 @@ function Arrow() {
       this.body[2].style.position = this.position;
       scene._map.appendChild(this.body[2]);
     }
-    this.body[2].style.left =this.body[0] + "px";
-    this.body[2].style.top =this.body[1]+ "px";
-    this.body[1] = this.body[1] -10; 
+    this.body[2].style.left = this.body[0] + "px";
+    this.body[2].style.top = this.body[1] + "px";
   };
-  this.show();
+  this.move = function() {
+    this.body[1] = this.body[1] - 10;
+    if (this.body[1] <= 0) {
+      clearInterval(arrowlist[no].timer);
+      scene._map.removeChild(this.body[2]);
+    } else {
+      this.show();
+    }
+  };
 }
 
 function Monster() {
@@ -106,6 +117,7 @@ function Monster() {
     if (this._aim == null) {
       this._aim = document.createElement("img");
       this._aim.src = "resoucre/smile.jpg";
+      this._aim.Id = "food";
       this._aim.style.position = this.position;
 
       scene._map.appendChild(this._aim);
@@ -136,13 +148,17 @@ window.onload = function() {
     } else {
       code = event.keyCode;
     }
-    if (code ===38){
-        arrow = new Arrow();
-        arrow.show();
-        shoottimer =setInterval(arrow.show(), 50);
-    }else{
-        man.setDirect(code);
+    if (code === 38) {
+      arrow = new Arrow(man.leftp, arrowlist.length);
+      arrowlist.push(arrow);
+      arrowlist[arrowlist.length - 1].timer = setInterval(
+        "arrowlist[" + (arrowlist.length - 1) + "].move()",
+        50
+      );
+      arrow.show();
+      arrow.move();
+    } else {
+      man.setDirect(code);
     }
-
   };
 };
