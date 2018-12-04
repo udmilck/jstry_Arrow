@@ -3,7 +3,7 @@ var man;
 var timer;
 var monster;
 var arrow;
-var shoottimer;
+var score = 0;
 var arrowlist = [];
 
 function Scene() {
@@ -95,12 +95,13 @@ function Arrow(x, no) {
     this.body[2].style.top = this.body[1] + "px";
   };
   this.move = function() {
-    this.body[1] = this.body[1] - 10;
+    this.body[1] = this.body[1] - 20;
     if (
-      (parseInt(this.body[0] / 40) == monster.x ||
-        parseInt(this.body[0] / 40) == monster.x - 1) &&
+      parseInt(this.body[0] / 40) == monster.x &&
       parseInt(this.body[1] / 40) == monster.y
     ) {
+      score++;
+      document.title = "分数:" + score + "分";
       monster.show();
       flgdead = true;
     }
