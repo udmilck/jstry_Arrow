@@ -1,10 +1,12 @@
 var scene;
 var man;
 var timer;
+var montimer;
 var monster;
 var arrow;
 var score = 0;
 var arrowlist = [];
+var storeArrow = 0;
 
 function Scene() {
   this.width = 1024;
@@ -13,7 +15,7 @@ function Scene() {
   this.color = "#ffffff";
   this._map = null; //save dom
 
-  this.show = function() {
+  this.show = function () {
     this._map = document.createElement("div");
     this._map.style.width = this.width + "px";
     this._map.style.height = this.height + "px";
@@ -33,7 +35,7 @@ function man() {
   this.position = "absolute";
   this.body = [1, 1, "black", null];
   this.leftp = 0;
-  this.setDirect = function(code) {
+  this.setDirect = function (code) {
     switch (code) {
       case 37:
         this.direct = "left";
@@ -43,7 +45,7 @@ function man() {
         break;
     }
   };
-  this.show = function() {
+  this.show = function () {
     if (this.body[3] == null) {
       this.body[3] = document.createElement("img");
       this.body[3].src = this.imgsrc;
@@ -56,17 +58,17 @@ function man() {
       scene.width - this.body[1] * this.height * 25 + "px";
     this.leftp = this.body[0] * this.width;
   };
-  this.move = function() {
+  this.move = function () {
     switch (this.direct) {
       case "right":
         this.body[0] = this.body[0] + 1;
-        if (parseInt(this.body[0]) == Math.floor(scene.width / this.width)) {
+        if (parseInt(this.body[0]) >= Math.floor(scene.width / this.width)) {
           this.body[0] = 0;
         }
         break;
       case "left":
         this.body[0] = this.body[0] - 1;
-        if (parseInt(this.body[0]) == 0) {
+        if (parseInt(this.body[0]) <= 0) {
           this.body[0] = Math.floor(scene.width / this.width);
         }
         break;
@@ -84,7 +86,7 @@ function Arrow(x, no) {
   this.position = "absolute";
   this.body = [x, 500, null];
   var flgdead = false;
-  this.show = function() {
+  this.show = function () {
     if (this.body[2] == null) {
       this.body[2] = document.createElement("img");
       this.body[2].src = this.imgsrc;
@@ -94,7 +96,7 @@ function Arrow(x, no) {
     this.body[2].style.left = this.body[0] + "px";
     this.body[2].style.top = this.body[1] + "px";
   };
-  this.move = function() {
+  this.move = function () {
     this.body[1] = this.body[1] - 20;
     if (
       parseInt(this.body[0] / 40) == monster.x &&
@@ -123,7 +125,7 @@ function Monster() {
   this.x = 0;
   this.y = 0;
 
-  this.show = function() {
+  this.show = function () {
     if (this._aim == null) {
       this._aim = document.createElement("img");
       this._aim.src = "resoucre/smile.jpg";
@@ -140,7 +142,18 @@ function Monster() {
   };
 }
 
-window.onload = function() {
+function shoot(x) {
+  arrow = new Arrow(x, arrowlist.length);
+  arrowlist.push(arrow);
+  arrowlist[arrowlist.length - 1].timer = setInterval(
+    "arrowlist[" + (arrowlist.length - 1) + "].move()",
+    25
+  );
+  arrow.show();
+  arrow.move();
+}
+
+window.onload = function () {
   scene = new Scene();
   scene.show();
 
@@ -151,7 +164,7 @@ window.onload = function() {
   man.show();
   timer = setInterval("man.move()", 50);
 
-  document.onkeydown = function() {
+  document.onkeydown = function () {
     var code;
     if (window.event) {
       code = window.event.keyCode;
@@ -159,16 +172,25 @@ window.onload = function() {
       code = event.keyCode;
     }
     if (code === 38) {
-      arrow = new Arrow(man.leftp, arrowlist.length);
-      arrowlist.push(arrow);
-      arrowlist[arrowlist.length - 1].timer = setInterval(
-        "arrowlist[" + (arrowlist.length - 1) + "].move()",
-        50
-      );
-      arrow.show();
-      arrow.move();
+      if (storeArrow == 0) {
+        shoot(man.leftp);
+      } else {
+        shoot(man.leftp);
+        for (; storeArrow > 0; storeArrow--) {
+          shoot(man.leftp + storeArrow * 20 * ((storeArrow % 2 == 0) ? 1 : -1));
+        }
+      }
+
+    } else if (code === 40) {
+      storeArrow = storeArrow + 1;
     } else {
       man.setDirect(code);
+    }
+
+    //monster move
+    if (score > 5 && Number.isInteger(score / 6)) {
+      timer = setInterval("monster.show()", 2000);
+      score = score + 1;
     }
   };
 };
